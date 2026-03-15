@@ -1,3 +1,4 @@
+import 'package:fitnessai/profile/about_app.dart';
 import 'package:fitnessai/profile/feedback/feedback_screen.dart';
 import 'package:fitnessai/profile/personalized_plan/workout_and_diet_plan_screen.dart';
 import 'package:flutter/material.dart';
@@ -151,11 +152,6 @@ class _SettingScreenState extends State<SettingScreen> {
                   ),
                 ),
                 _SettingTile(
-                  icon: Icons.restaurant_menu,
-                  title: "Explore Food",
-                  onTap: () {},
-                ),
-                _SettingTile(
                   icon: Icons.alarm,
                   title: "Set Reminder",
                   onTap: () {},
@@ -193,7 +189,7 @@ class _SettingScreenState extends State<SettingScreen> {
                   title: "About App",
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const AIChatScreen()),
+                    MaterialPageRoute(builder: (_) => const AboutApp()),
                   ),
                 ),
               ],

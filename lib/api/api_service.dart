@@ -6,9 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'model/user_model.dart';
 
 class UserApiService {
+
   // Base URL
     static const String _baseUrl = "http://192.168.1.44:8000/api";
-
 
     // Endpoints
     static const String _register = "/user/register";
@@ -19,9 +19,9 @@ class UserApiService {
     static const String _profileEndpoint = "$_baseUrl/user/profile";
     static const String updateProfile = "$_baseUrl/user/updateProfile";
 
-
     //learderboard
     static const String leaderBoardApi = "${_baseUrl}/user/leaderBoard";
+
 
     //diet
     static const String dietlist = "$_baseUrl/user/dietPlans";
@@ -34,6 +34,13 @@ class UserApiService {
     static const String workoutlist = "$_baseUrl/user/workouts";
     static String focusAreaWorkout(int categotyid) => "$_baseUrl/user/workouts/focus/$categotyid";
     static String workoutdetails(int workoutid) => "$_baseUrl/user/workoutExe/$workoutid";
+
+    //userworkout
+    static const String startworkout = "$_baseUrl/user/startWorkout";
+    static String workoutexercise(int workoutid) => "$_baseUrl/user/workoutExercises/$workoutid";
+    static const String updateExeProgress = "$_baseUrl/user/updateExeProgress";
+    static const String todayWorkouts = "$_baseUrl/user/todayWorkouts";
+    static String resumeworkout(String sessionId) => "$_baseUrl/user/resumeWorkout/$sessionId";
 
     //exercise
     static String exercisedetails(int exerciseid) => "$_baseUrl/user/exercise/$exerciseid";
@@ -51,6 +58,8 @@ class UserApiService {
     //progress
     static const progresstrack = "$_baseUrl/user/progress";
     static const history = "$_baseUrl/user/history";
+    static const weeklystatus = "$_baseUrl/user/weeklyStatus";
+    static const finsihworkout = "$_baseUrl/user/finishWorkout";
 
 
 
@@ -433,7 +442,6 @@ class UserApiService {
       }
     }
 
-
     // workout
     static Future<List<dynamic>> getQuickWorkouts() async {
       try {
@@ -754,6 +762,8 @@ class UserApiService {
       }
     }
 
+
+    // workout
     static Future<Map<String, dynamic>> fetchUserProgress() async {
       final token = await getToken(); // Get stored token
       final String endpoint = progresstrack;
@@ -797,6 +807,208 @@ class UserApiService {
       }
     }
 
+    static Future<Map<String, dynamic>> fetchWeeklyStatus() async {
+      final token = await getToken();
 
+      final response = await http.get(
+        Uri.parse(weeklystatus),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception(
+          'Failed to fetch weekly status. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+
+    // user workout
+    static Future<Map<String, dynamic>> startWorkout(int workoutId) async {
+      final token = await getToken();
+
+      final response = await http.post(
+        Uri.parse(startworkout),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          "workout_id": workoutId,
+        }),
+      );
+
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception(
+          'Failed to start workout. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<Map<String, dynamic>> fetchWorkoutExercises(int workoutId) async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(workoutexercise(workoutId)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception(
+          'Failed to fetch workout exercises. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<Map<String, dynamic>> updateExerciseProgress({
+      required String sessionId,
+      required int workoutId,
+      required int exerciseId,
+      required int exerciseOrder,
+      int? setsCompleted,
+      int? repsCompleted,
+      int? exerciseDurationSec,
+      required int isCompleted,
+    }) async {
+
+      final token = await getToken();
+
+      Map<String, dynamic> body = {
+        "session_id": sessionId,
+        "workout_id": workoutId,
+        "exercise_id": exerciseId,
+        "exercise_order": exerciseOrder,
+        "is_completed": isCompleted,
+      };
+
+      if (setsCompleted != null) body["sets_completed"] = setsCompleted;
+      if (repsCompleted != null) body["reps_completed"] = repsCompleted;
+      if (exerciseDurationSec != null) {
+        body["exercise_duration_sec"] = exerciseDurationSec;
+      }
+
+      final response = await http.post(
+        Uri.parse(updateExeProgress),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(body),
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception(
+          'Failed to update exercise progress. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<Map<String, dynamic>> finishWorkout({
+      required String sessionId,
+    }) async {
+      final token = await getToken();
+
+      Map<String, dynamic> body = {
+        "session_id": sessionId,
+      };
+
+      final response = await http.post(
+        Uri.parse(finsihworkout),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(body),
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception(
+          'Failed to finish workout. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<Map<String, dynamic>> getTodayWorkouts() async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(todayWorkouts),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception(
+          'Failed to fetch today workouts. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<Map<String, dynamic>> resumeWorkoutApi({
+      required String sessionId,
+    }) async {
+
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(resumeworkout(sessionId)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+      print(response.body);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception(
+          'Failed to resume workout. Status code: ${response.statusCode}',
+        );
+      }
+    }
 }
 

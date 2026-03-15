@@ -1,9 +1,5 @@
-
-import 'package:fitnessai/authetication/login_screen.dart';
 import 'package:fitnessai/authetication/splash_screen.dart';
-import 'package:fitnessai/ui_helper/bottomnavbar.dart';
 import 'package:flutter/material.dart';
-
 
 void main() {
   runApp(const MyApp());

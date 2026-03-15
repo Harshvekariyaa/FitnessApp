@@ -16,7 +16,7 @@ class _ProgressTrackingScreenState extends State<ProgressTrackingScreen>
     with SingleTickerProviderStateMixin {
 
   int totalWorkouts = 0;
-  int totalCalories = 0;
+  double totalCalories = 0; // ✅ FIXED: was int, API returns double
   int currentStreak = 0;
   int totalXp = 0;
 
@@ -52,7 +52,9 @@ class _ProgressTrackingScreenState extends State<ProgressTrackingScreen>
         final data = response["data"];
         setState(() {
           totalWorkouts = data["total_workouts"] ?? 0;
-          totalCalories = data["total_calories"] ?? 0;
+          // ✅ FIXED: safely parse double from API response
+          totalCalories =
+              double.tryParse(data["total_calories"].toString()) ?? 0.0;
           currentStreak = data["current_streak"] ?? 0;
           totalXp = int.tryParse(data["total_xp"].toString()) ?? 0;
           isLoading = false;
@@ -211,7 +213,7 @@ class _ProgressTrackingScreenState extends State<ProgressTrackingScreen>
           child: _statCard(
             label: "WORKOUTS",
             value: "$totalWorkouts",
-            unit: "sessions",
+            unit: "sessions", // ✅ Only "sessions" shown as per requirement
             icon: Icons.fitness_center,
           ),
         ),
@@ -219,7 +221,10 @@ class _ProgressTrackingScreenState extends State<ProgressTrackingScreen>
         Expanded(
           child: _statCard(
             label: "CALORIES",
-            value: "$totalCalories",
+            // ✅ FIXED: format double — show decimal only if non-zero
+            value: totalCalories % 1 == 0
+                ? totalCalories.toInt().toString()
+                : totalCalories.toStringAsFixed(1),
             unit: "kcal burned",
             icon: Icons.local_fire_department,
           ),
@@ -354,7 +359,10 @@ class _ProgressTrackingScreenState extends State<ProgressTrackingScreen>
   Widget _buildWorkoutHistoryButton() {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutHistoryScreen(),));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => WorkoutHistoryScreen()),
+        );
       },
       child: Container(
         width: double.infinity,

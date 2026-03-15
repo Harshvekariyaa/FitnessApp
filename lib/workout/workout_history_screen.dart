@@ -86,34 +86,34 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
     }).toList();
   }
 
-  Map<String, int> getDaySummary() {
-    List workouts = getSelectedDayWorkouts();
-    int calories = 0, xp = 0, exercises = 0;
-    for (var w in workouts) {
-      calories += (w["total_calories"] ?? 0) as int;
-      xp += int.tryParse(w["total_xp"].toString()) ?? 0;
-      exercises += (w["total_exercises"] ?? 0) as int;
-    }
-    return {
-      "workouts": workouts.length,
-      "calories": calories,
-      "xp": xp,
-      "exercises": exercises,
-    };
-  }
-
   Map<String, int> getAllTimeStats() {
     int totalCalories = 0, totalXp = 0, totalExercises = 0;
     for (var w in historyList) {
-      totalCalories += (w["total_calories"] ?? 0) as int;
+      totalCalories += ((w["total_calories"] ?? 0) as num).toInt();
       totalXp += int.tryParse(w["total_xp"].toString()) ?? 0;
-      totalExercises += (w["total_exercises"] ?? 0) as int;
+      totalExercises += ((w["total_exercises"] ?? 0) as num).toInt();
     }
     return {
       "workouts": historyList.length,
       "calories": totalCalories,
       "xp": totalXp,
       "exercises": totalExercises,
+    };
+  }
+
+  Map<String, int> getDaySummary() {
+    List workouts = getSelectedDayWorkouts();
+    int calories = 0, xp = 0, exercises = 0;
+    for (var w in workouts) {
+      calories += ((w["total_calories"] ?? 0) as num).toInt();
+      xp += int.tryParse(w["total_xp"].toString()) ?? 0;
+      exercises += ((w["total_exercises"] ?? 0) as num).toInt();
+    }
+    return {
+      "workouts": workouts.length,
+      "calories": calories,
+      "xp": xp,
+      "exercises": exercises,
     };
   }
 
@@ -134,9 +134,9 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
       DateTime cleanDate = DateTime(date.year, date.month, date.day);
       if (!cleanDate.isBefore(startDate)) {
         workouts++;
-        calories += (w["total_calories"] ?? 0) as int;
+        calories += ((w["total_calories"] ?? 0) as num).toInt();
         xp += int.tryParse(w["total_xp"].toString()) ?? 0;
-        exercises += (w["total_exercises"] ?? 0) as int;
+        exercises += ((w["total_exercises"] ?? 0) as num).toInt();
       }
     }
 

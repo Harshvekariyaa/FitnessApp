@@ -6,6 +6,242 @@ import 'package:fitnessai/ui_helper/common_widgets.dart';
 import 'package:fitnessai/api/api_service.dart';
 import '../Themes_and_color/app_colors.dart';
 
+// ─── Shimmer primitive ────────────────────────────────────────────────────────
+class _Shimmer extends StatefulWidget {
+  final double width;
+  final double height;
+  final double radius;
+  final bool circle;
+
+  const _Shimmer({
+    required this.width,
+    required this.height,
+    this.radius = 10,
+    this.circle = false,
+  });
+
+  @override
+  State<_Shimmer> createState() => _ShimmerState();
+}
+
+class _ShimmerState extends State<_Shimmer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, __) => Container(
+        width: widget.width,
+        height: widget.height,
+        decoration: BoxDecoration(
+          shape: widget.circle ? BoxShape.circle : BoxShape.rectangle,
+          borderRadius:
+          widget.circle ? null : BorderRadius.circular(widget.radius),
+          gradient: LinearGradient(
+            begin: Alignment(-1.5 + _anim.value * 3, 0),
+            end: Alignment(-0.5 + _anim.value * 3, 0),
+            colors: [
+              Colors.grey.shade200,
+              Colors.grey.shade100,
+              Colors.grey.shade200,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Full-screen skeleton matching ProfileScreen layout ───────────────────────
+class _ProfileScreenSkeleton extends StatelessWidget {
+  const _ProfileScreenSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        children: [
+          // ── Hero header skeleton ──────────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.85),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(36),
+                bottomRight: Radius.circular(36),
+              ),
+            ),
+            child: Column(
+              children: [
+                // Avatar ring
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: Colors.white.withOpacity(0.5), width: 3),
+                  ),
+                  child: const _Shimmer(
+                      width: 92, height: 92, radius: 46, circle: true),
+                ),
+                const SizedBox(height: 14),
+                // Name
+                const _Shimmer(width: 160, height: 18, radius: 6),
+                const SizedBox(height: 8),
+                // Email row
+                const _Shimmer(width: 200, height: 13, radius: 5),
+                const SizedBox(height: 16),
+                // XP chip + Edit button row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    _Shimmer(width: 90, height: 32, radius: 20),
+                    SizedBox(width: 12),
+                    _Shimmer(width: 110, height: 32, radius: 20),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                // ── Stat chips row skeleton ───────────────────────────
+                Row(
+                  children: List.generate(3, (i) {
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(right: i < 2 ? 10 : 0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: const [
+                              BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 8,
+                                  offset: Offset(0, 4)),
+                            ],
+                          ),
+                          child: Column(
+                            children: const [
+                              _Shimmer(
+                                  width: 20,
+                                  height: 20,
+                                  radius: 4),
+                              SizedBox(height: 6),
+                              _Shimmer(width: 48, height: 14, radius: 5),
+                              SizedBox(height: 4),
+                              _Shimmer(width: 36, height: 11, radius: 4),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ── Personal Info card skeleton ───────────────────────
+                _infoCardSkeleton(rows: 3),
+
+                const SizedBox(height: 14),
+
+                // ── Contact & Location card skeleton ──────────────────
+                _infoCardSkeleton(rows: 2),
+
+                const SizedBox(height: 22),
+
+                // ── CTA button skeleton ───────────────────────────────
+                const _Shimmer(
+                    width: double.infinity, height: 50, radius: 14),
+
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoCardSkeleton({required int rows}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+              color: Colors.black12, blurRadius: 12, offset: Offset(0, 6)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Card title row
+          Row(
+            children: const [
+              _Shimmer(width: 34, height: 34, radius: 10),
+              SizedBox(width: 10),
+              _Shimmer(width: 120, height: 16, radius: 6),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Divider(color: Colors.grey.shade100, height: 1),
+          const SizedBox(height: 6),
+          // Info rows
+          ...List.generate(rows, (_) => _infoRowSkeleton()),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRowSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      child: Row(
+        children: const [
+          _Shimmer(width: 17, height: 17, radius: 4),
+          SizedBox(width: 10),
+          _Shimmer(width: 70, height: 14, radius: 5),
+          Spacer(),
+          _Shimmer(width: 80, height: 28, radius: 10),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── ProfileScreen ────────────────────────────────────────────────────────────
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -55,7 +291,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const _ProfileScreenSkeleton()   // ← was CircularProgressIndicator
           : SingleChildScrollView(
         child: Column(
           children: [
@@ -65,7 +301,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryLight],
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primaryLight
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -92,7 +331,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: AppColors.white.withOpacity(0.8),
+                              color:
+                              AppColors.white.withOpacity(0.8),
                               width: 3),
                         ),
                         child: CircleAvatar(
@@ -106,7 +346,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           as ImageProvider,
                         ),
                       ),
-                      // Online dot
                       Container(
                         width: 16,
                         height: 16,
@@ -133,31 +372,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Icon(Icons.email_outlined,
                           size: 13,
-                          color: AppColors.white.withOpacity(0.75)),
+                          color:
+                          AppColors.white.withOpacity(0.75)),
                       const SizedBox(width: 4),
                       Text(
                         getValue("user_email"),
-                        style: textStyle(
-                            AppColors.white70, 13, AppColors.normal),
+                        style: textStyle(AppColors.white70, 13,
+                            AppColors.normal),
                       ),
                     ],
                   ),
 
                   const SizedBox(height: 16),
 
-                  // XP Chip + Edit Button row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // XP Badge
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppColors.white.withOpacity(0.2),
+                          color:
+                          AppColors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: AppColors.white.withOpacity(0.4)),
+                              color: AppColors.white
+                                  .withOpacity(0.4)),
                         ),
                         child: Row(
                           children: [
@@ -166,8 +406,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const SizedBox(width: 4),
                             Text(
                               "${getValue("user_xp_points")} XP",
-                              style: textStyle(
-                                  AppColors.white, 13, AppColors.w600),
+                              style: textStyle(AppColors.white,
+                                  13, AppColors.w600),
                             ),
                           ],
                         ),
@@ -179,7 +419,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: AppColors.white),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius:
+                            BorderRadius.circular(20),
                           ),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
@@ -188,8 +429,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             size: 15, color: AppColors.white),
                         label: Text(
                           "Edit Profile",
-                          style: textStyle(
-                              AppColors.white, 13, AppColors.w600),
+                          style: textStyle(AppColors.white, 13,
+                              AppColors.w600),
                         ),
                         onPressed: () async {
                           final result = await Navigator.push(
@@ -210,7 +451,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 20),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
                   /// ===== QUICK STATS ROW =====
@@ -219,13 +461,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _StatChip(
                         icon: Icons.straighten,
                         label: "Height",
-                        value: getValue("user_height", suffix: " cm"),
+                        value: getValue("user_height",
+                            suffix: " cm"),
                       ),
                       const SizedBox(width: 10),
                       _StatChip(
                         icon: Icons.monitor_weight_outlined,
                         label: "Weight",
-                        value: getValue("user_weight", suffix: " kg"),
+                        value: getValue("user_weight",
+                            suffix: " kg"),
                       ),
                       const SizedBox(width: 10),
                       _StatChip(
@@ -253,7 +497,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           label: "Gender",
                           value: getValue("user_gender")),
                       _InfoRow(
-                          icon: Icons.accessibility_new_outlined,
+                          icon: Icons
+                              .accessibility_new_outlined,
                           label: "Body Type",
                           value: getValue("user_body_type")),
                     ],
@@ -316,13 +561,16 @@ class _StatChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+        padding:
+        const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [
             BoxShadow(
-                color: Colors.black12, blurRadius: 8, offset: Offset(0, 4)),
+                color: Colors.black12,
+                blurRadius: 8,
+                offset: Offset(0, 4)),
           ],
         ),
         child: Column(
@@ -333,7 +581,8 @@ class _StatChip extends StatelessWidget {
                 style: textStyle(AppColors.black, 14, AppColors.bold)),
             const SizedBox(height: 2),
             Text(label,
-                style: textStyle(AppColors.grey, 11, AppColors.normal)),
+                style:
+                textStyle(AppColors.grey, 11, AppColors.normal)),
           ],
         ),
       ),
@@ -348,7 +597,9 @@ class _InfoCard extends StatelessWidget {
   final List<Widget> children;
 
   const _InfoCard(
-      {required this.title, required this.icon, required this.children});
+      {required this.title,
+        required this.icon,
+        required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -359,13 +610,14 @@ class _InfoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
-              color: Colors.black12, blurRadius: 12, offset: Offset(0, 6)),
+              color: Colors.black12,
+              blurRadius: 12,
+              offset: Offset(0, 6)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Card Title
           Row(
             children: [
               Container(
@@ -378,11 +630,11 @@ class _InfoCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(title,
-                  style: textStyle(AppColors.black, 16, AppColors.bold)),
+                  style:
+                  textStyle(AppColors.black, 16, AppColors.bold)),
             ],
           ),
           const SizedBox(height: 14),
-          // Divider
           Divider(color: Colors.grey.shade100, height: 1),
           const SizedBox(height: 6),
           ...children,
@@ -410,17 +662,19 @@ class _InfoRow extends StatelessWidget {
           Icon(icon, size: 17, color: AppColors.grey),
           const SizedBox(width: 10),
           Text(label,
-              style: textStyle(AppColors.grey, 14, AppColors.normal)),
+              style:
+              textStyle(AppColors.grey, 14, AppColors.normal)),
           const Spacer(),
           Container(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.primary.withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(value,
-                style: textStyle(AppColors.primary, 14, AppColors.bold)),
+                style: textStyle(
+                    AppColors.primary, 14, AppColors.bold)),
           ),
         ],
       ),
