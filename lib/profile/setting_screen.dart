@@ -1,6 +1,7 @@
 import 'package:fitnessai/profile/about_app.dart';
 import 'package:fitnessai/profile/feedback/feedback_screen.dart';
 import 'package:fitnessai/profile/personalized_plan/workout_and_diet_plan_screen.dart';
+import 'package:fitnessai/profile/set_reminder.dart';
 import 'package:flutter/material.dart';
 import 'package:fitnessai/profile/edit_profile_screen.dart';
 import 'package:fitnessai/ai_chat_screen.dart';
@@ -154,7 +155,9 @@ class _SettingScreenState extends State<SettingScreen> {
                 _SettingTile(
                   icon: Icons.alarm,
                   title: "Set Reminder",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => SetReminder(),));
+                  },
                 ),
                 _SettingTile(
                   icon: Icons.auto_graph,
