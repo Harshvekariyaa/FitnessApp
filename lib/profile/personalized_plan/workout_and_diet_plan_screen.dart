@@ -1,5 +1,6 @@
 import 'package:fitnessai/Themes_and_color/app_colors.dart';
-import 'package:fitnessai/profile/personalized_plan/diet_plans.dart';
+import 'package:fitnessai/profile/personalized_plan/workout/ai_workout_plan_list.dart';
+import 'package:fitnessai/profile/personalized_plan/diet/ai_diet_plans.dart';
 import 'package:fitnessai/profile/personalized_plan/workout_plans.dart';
 import 'package:fitnessai/ui_helper/common_widgets.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ class _WorkoutAndDietPlanScreenState extends State<WorkoutAndDietPlanScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slide1;
   late Animation<Offset> _slide2;
+  late Animation<Offset> _slide3;
 
   @override
   void initState() {
@@ -55,6 +57,14 @@ class _WorkoutAndDietPlanScreenState extends State<WorkoutAndDietPlanScreen>
       curve: const Interval(0.25, 0.85, curve: Curves.easeOutCubic),
     ));
 
+    _slide3 = Tween<Offset>(
+      begin: const Offset(0, 0.18),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: const Interval(0.45, 1.0, curve: Curves.easeOutCubic),
+    ));
+
     _fadeController.forward();
     _slideController.forward();
   }
@@ -80,23 +90,89 @@ class _WorkoutAndDietPlanScreenState extends State<WorkoutAndDietPlanScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header label
+                // Header Section
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 20, top: 4),
-                  child: Text(
-                    "YOUR PLANS",
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.35),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 3.5,
-                    ),
+                  padding: const EdgeInsets.only(bottom: 24, top: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Small label
+                      Text(
+                        "YOUR PLANS",
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(0.35),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 3.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Big title
+                      const Text(
+                        "Train Smart,\nEat Right.",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.8,
+                          height: 1.15,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      // Description
+                      Text(
+                        "Personalized plans built around your goals — from AI-powered workouts to balanced nutrition.",
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(0.45),
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w400,
+                          height: 1.55,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Divider
+                      Container(
+                        height: 1,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withOpacity(0.12),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
-                // Workout Card
+                // AI Workout Plan Card
                 SlideTransition(
                   position: _slide1,
+                  child: _planCard(
+                    context: context,
+                    image: "assets/images/ai_workout.png",
+                    name: "AI Workout Plan",
+                    planLabel: "personalized for you",
+                    tag: "AI · ADAPTIVE · SMART",
+                    accentColor: const Color(0xFFBB86FC),
+                    iconData: Icons.auto_awesome_rounded,
+                    ontap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AiWorkoutPlan()),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Workout Card
+                SlideTransition(
+                  position: _slide2,
                   child: _planCard(
                     context: context,
                     image: "assets/images/stretch.jpeg",
@@ -119,7 +195,7 @@ class _WorkoutAndDietPlanScreenState extends State<WorkoutAndDietPlanScreen>
 
                 // Diet Card
                 SlideTransition(
-                  position: _slide2,
+                  position: _slide3,
                   child: _planCard(
                     context: context,
                     image: "assets/images/f1.jpeg",
@@ -131,7 +207,7 @@ class _WorkoutAndDietPlanScreenState extends State<WorkoutAndDietPlanScreen>
                     ontap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => DietPlans()),
+                        MaterialPageRoute(builder: (context) => AiDietPlans()),
                       );
                     },
                   ),

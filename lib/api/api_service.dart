@@ -6,9 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'model/user_model.dart';
 
 class UserApiService {
-
-  // Base URL
-    static const String _baseUrl = "http://192.168.1.44:8000/api";
+  // Base UR
+    static const String _baseUrl = "http://172.16.27.119:8000/api";
 
     // Endpoints
     static const String _register = "/user/register";
@@ -37,10 +36,18 @@ class UserApiService {
 
     //userworkout
     static const String startworkout = "$_baseUrl/user/startWorkout";
-    static String workoutexercise(int workoutid) => "$_baseUrl/user/workoutExercises/$workoutid";
+    static String getExercises(int workoutid) => "$_baseUrl/user/getExercises?workout_id=$workoutid";
+    static String getAiExercises(int aiworkoutid) => "$_baseUrl/user/getExercises?ai_workout_id=$aiworkoutid";
     static const String updateExeProgress = "$_baseUrl/user/updateExeProgress";
     static const String todayWorkouts = "$_baseUrl/user/todayWorkouts";
     static String resumeworkout(String sessionId) => "$_baseUrl/user/resumeWorkout/$sessionId";
+
+    // ai
+    static const String aiworkoutdetails = "$_baseUrl/user/aiWorkout";
+    static String aiWorkoutdetails(int wokoutid) => "$_baseUrl/user/aiWorkoutExercises/$wokoutid";
+    static const String generateWorkout = "$_baseUrl/user/generate/AIWorkout";
+    static String aiWorkoutdetailsafterCreation(int wokoutid) => "$_baseUrl/user/getAiWorkoutDetail/$wokoutid";
+
 
     //exercise
     static String exercisedetails(int exerciseid) => "$_baseUrl/user/exercise/$exerciseid";
@@ -60,6 +67,20 @@ class UserApiService {
     static const history = "$_baseUrl/user/history";
     static const weeklystatus = "$_baseUrl/user/weeklyStatus";
     static const finsihworkout = "$_baseUrl/user/finishWorkout";
+
+    // goal
+    static const goals = "$_baseUrl/user/goals";
+
+    //ai deit
+    static const aiDiet = "$_baseUrl/user/aiDiet";
+    static String aiDietPlan(int id) => "$_baseUrl/user/aiDietPlan/$id";
+    static String genarateDiet = "$_baseUrl/user/generate/AIDiet";
+
+    //progress track
+    static const weeklyReport = "$_baseUrl/user/weeklyReport";
+    static const weeklyGraph = "$_baseUrl/user/weeklyGraph";
+    static const aiReport = "$_baseUrl/user/aiReport";
+
 
 
 
@@ -807,6 +828,8 @@ class UserApiService {
       }
     }
 
+
+
     static Future<Map<String, dynamic>> fetchWeeklyStatus() async {
       final token = await getToken();
 
@@ -829,6 +852,7 @@ class UserApiService {
     }
 
 
+
     // user workout
     static Future<Map<String, dynamic>> startWorkout(int workoutId) async {
       final token = await getToken();
@@ -846,6 +870,7 @@ class UserApiService {
       );
 
       print(response.statusCode);
+      print(response.body);
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         return jsonData;
@@ -860,7 +885,7 @@ class UserApiService {
       final token = await getToken();
 
       final response = await http.get(
-        Uri.parse(workoutexercise(workoutId)),
+        Uri.parse(getExercises(workoutId)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -872,6 +897,61 @@ class UserApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         return jsonData;
+      } else {
+        throw Exception(
+          'Failed to fetch workout exercises. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+
+    static Future<Map<String, dynamic>> starAitWorkout(int aiworkoutId) async {
+      final token = await getToken();
+
+      final response = await http.post(
+        Uri.parse(startworkout),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          "ai_workout_id": aiworkoutId,
+        }),
+      );
+
+      print(response.statusCode);
+      print(response.body);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception(
+          'Failed to start workout. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<List<dynamic>> fetchAiWorkoutExercises(int aiworkoutId) async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(getAiExercises(aiworkoutId)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        // Extract only exercise list
+        return jsonData['data'];
       } else {
         throw Exception(
           'Failed to fetch workout exercises. Status code: ${response.statusCode}',
@@ -895,6 +975,55 @@ class UserApiService {
       Map<String, dynamic> body = {
         "session_id": sessionId,
         "workout_id": workoutId,
+        "exercise_id": exerciseId,
+        "exercise_order": exerciseOrder,
+        "is_completed": isCompleted,
+      };
+
+      if (setsCompleted != null) body["sets_completed"] = setsCompleted;
+      if (repsCompleted != null) body["reps_completed"] = repsCompleted;
+      if (exerciseDurationSec != null) {
+        body["exercise_duration_sec"] = exerciseDurationSec;
+      }
+
+      final response = await http.post(
+        Uri.parse(updateExeProgress),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(body),
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception(
+          'Failed to update exercise progress. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<Map<String, dynamic>> updateAiExerciseProgress({
+      required String sessionId,
+      required int aiworkoutId,
+      required int exerciseId,
+      required int exerciseOrder,
+      int? setsCompleted,
+      int? repsCompleted,
+      int? exerciseDurationSec,
+      required int isCompleted,
+    }) async {
+
+      final token = await getToken();
+
+      Map<String, dynamic> body = {
+        "session_id": sessionId,
+        "ai_workout_id": aiworkoutId,
         "exercise_id": exerciseId,
         "exercise_order": exerciseOrder,
         "is_completed": isCompleted,
@@ -1004,11 +1133,343 @@ class UserApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         return jsonData;
+
       } else {
         throw Exception(
           'Failed to resume workout. Status code: ${response.statusCode}',
         );
       }
     }
+
+
+    // ai
+    static Future<List<Map<String, dynamic>>> getAiWorkoutDetails() async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(aiworkoutdetails),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        return List<Map<String, dynamic>>.from(jsonData['data']);
+      } else {
+        throw Exception(
+          'Failed to fetch AI workout details. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<List<Map<String, dynamic>>> getResumeWorkout(int workoutId) async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(aiWorkoutdetails(workoutId)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        return List<Map<String, dynamic>>.from(jsonData['data']);
+      } else {
+        throw Exception(
+          'Failed to fetch exercises. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<Map<String, dynamic>> generateAIWorkout({
+      required String goal,
+      required String focusArea,
+      required int duration,
+      required String bodyType,
+      required String difficulty, // ✅ Added parameter
+    }) async {
+      final token = await getToken();
+
+      final response = await http.post(
+        Uri.parse(generateWorkout),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          "goal": goal,
+          "focus_area": focusArea,
+          "duration": duration,
+          "body_type": bodyType,
+          "difficulty": difficulty, // ✅ Added to request body
+        }),
+      );
+
+      print(response.statusCode);
+      print('Response body: "${response.body}"');
+      print('Response headers: ${response.headers}');
+
+
+      if (response.statusCode == 200) {
+        // Guard against empty body
+        if (response.body.isEmpty) {
+          throw Exception('Server returned empty response.');
+        }
+
+        Map<String, dynamic> jsonData;
+        try {
+          jsonData = json.decode(response.body);
+        } catch (e) {
+          throw Exception('Invalid JSON from server: ${response.body}');
+        }
+
+        if (jsonData['status'] == true) {
+          return jsonData;
+        } else {
+          throw Exception('Failed to generate AI workout: ${jsonData['message'] ?? 'Unknown error'}');
+        }
+      } else {
+        throw Exception('Failed to generate AI workout. Status code: ${response.statusCode}');
+      }
+    }
+
+
+    //goal
+    static Future<List<Map<String, dynamic>>> getGoals() async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(goals),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        return List<Map<String, dynamic>>.from(jsonData['data']);
+      } else {
+        throw Exception(
+          'Failed to fetch goals. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<Map<String, dynamic>> getAiWorkoutFullDetails(int workoutId) async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(aiWorkoutdetailsafterCreation(workoutId)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        // Since "data" is an object, not a list
+        return Map<String, dynamic>.from(jsonData['data']);
+      } else {
+        throw Exception(
+          'Failed to fetch AI workout full details. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+
+    // ai diet
+    static Future<List<Map<String, dynamic>>> getAiDietPlans() async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(aiDiet),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        return List<Map<String, dynamic>>.from(jsonData['data']);
+      } else {
+        throw Exception(
+          'Failed to fetch diet plans. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<Map<String, dynamic>> getAiDietPlanFullDetails(int dietPlanId) async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(aiDietPlan(dietPlanId)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        // "data" is an object (contains plan + days + meals)
+        return Map<String, dynamic>.from(jsonData['data']);
+      } else {
+        throw Exception(
+          'Failed to fetch AI diet plan full details. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<Map<String, dynamic>?> generateDiet({
+      required String goal,
+      required String bodyType,
+      required int calories,
+    }) async {
+      try {
+        final url = Uri.parse(_baseUrl + "/user/generate/AIDiet");
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? token = prefs.getString('token');
+
+        final response = await http.post(
+          url,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: jsonEncode({
+            "goal": goal,
+            "body_type": bodyType,
+            "calories": calories,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+
+          if (data['status'] == true) {
+            return data['data']; // ✅ RETURN FULL DATA
+          }
+        }
+
+        return null;
+      } catch (e) {
+        print("❌ Generate Diet error: $e");
+        return null;
+      }
+    }
+
+
+    // progress track
+
+    static Future<Map<String, dynamic>> getWeeklyReport() async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(weeklyReport),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        return jsonData; // full response (current_week, previous_week, etc.)
+      } else {
+        throw Exception(
+          'Failed to fetch weekly report. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<List<Map<String, dynamic>>> getWeeklyGraph() async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(weeklyGraph),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+
+        return List<Map<String, dynamic>>.from(jsonData);
+      } else {
+        throw Exception(
+          'Failed to fetch weekly graph. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+    static Future<String> getAiReport() async {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse(aiReport),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        return jsonData['ai_feedback']; // only returning feedback string
+      } else {
+        throw Exception(
+          'Failed to fetch AI report. Status code: ${response.statusCode}',
+        );
+      }
+    }
+
+
 }
 

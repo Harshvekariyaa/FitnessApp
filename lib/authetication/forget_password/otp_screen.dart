@@ -188,12 +188,9 @@ class _OtpScreenState extends State<OtpScreen> {
 
               // ⏳ Loader
               if (_isLoading)
-                const CircularProgressIndicator(
-                  color: AppColors.primary,
-                  strokeWidth: 2.5,
-                ),
+                buildLoader(),
 
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
 
               // 📝 Helper Text
               Text(

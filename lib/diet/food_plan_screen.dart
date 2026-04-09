@@ -446,7 +446,9 @@ class _FoodScreenState extends State<FoodScreen> {
           ],
         ),
       ),
+
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_food_ai',
         backgroundColor: AppColors.primary,
         elevation: 4,
         icon: const Icon(Icons.smart_toy_outlined, color: Colors.white),

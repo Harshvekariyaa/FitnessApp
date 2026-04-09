@@ -3,6 +3,7 @@ import 'package:fitnessai/workout/injury/injuries_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fitnessai/ui_helper/common_widgets.dart';
 import '../Themes_and_color/app_colors.dart';
+import '../ai_chat_screen.dart';
 import 'detailed_workout_screen.dart';
 import 'generate_workout/generate_workout_screen.dart';
 import 'workout_history_screen.dart';
@@ -499,6 +500,26 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               const SizedBox(height: 24),
             ],
           ),
+        ),
+        /// AI Chat Button
+        floatingActionButton: FloatingActionButton.extended(
+          heroTag: 'fab_workout_ai',
+          backgroundColor: AppColors.primary,
+          icon: const Icon(Icons.smart_toy_outlined, color: Colors.white),
+          label: const Text(
+            "Chat with AI",
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          onPressed: () {
+            _searchFocusNode.unfocus();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => AIChatScreen()),
+            );
+          },
         ),
       ),
     );

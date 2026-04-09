@@ -50,7 +50,7 @@ class _SettingScreenState extends State<SettingScreen> {
       backgroundColor: AppColors.scaffoldBackground,
       appBar: commonAppBar("Settings"),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: buildLoader())
           : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

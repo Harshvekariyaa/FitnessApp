@@ -145,7 +145,7 @@ class _MealListScreenState extends State<MealListScreen> {
       ),
       backgroundColor: AppColors.scaffoldBackground,
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: buildLoader())
           : meals.isEmpty
           ? const Center(child: Text("No meals available"))
           : Padding(

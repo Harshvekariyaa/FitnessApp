@@ -170,9 +170,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             Container(
               color: Colors.black.withOpacity(0.5),
               child: Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                ),
+                child: buildLoader()
               ),
             ),
         ],

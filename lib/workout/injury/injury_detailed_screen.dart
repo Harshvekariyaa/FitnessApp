@@ -80,7 +80,7 @@ class _InjuryDetailedScreenState extends State<InjuryDetailedScreen> {
       backgroundColor: AppColors.scaffoldBackground,
       appBar: commonAppBar("Injury Details"),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: buildLoader())
           : injuryData == null
           ? const Center(child: Text("Injury not found"))
           : SingleChildScrollView(

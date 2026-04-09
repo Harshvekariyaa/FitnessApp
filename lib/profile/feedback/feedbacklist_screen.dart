@@ -64,7 +64,7 @@ class _FeedbacklistScreenState extends State<FeedbacklistScreen> {
       backgroundColor: AppColors.scaffoldBackground,
 
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: buildLoader())
           : feedbackList.isEmpty
           ? const Center(child: Text("No Feedback Found"))
           : ListView.builder(

@@ -3,25 +3,43 @@ import 'package:flutter/material.dart';
 import 'package:fitnessai/ui_helper/common_widgets.dart';
 import 'package:fitnessai/workout/injury/injury_detailed_screen.dart';
 
-class ExerciseScreen extends StatefulWidget {
+/// AI workout exercise screen.
+///
+/// Each item in [exercises] is a **flat** map with shape:
+/// {
+///   "exercise_id"            : int,
+///   "exercise_name"          : String,
+///   "exercise_gif_full_url"  : String,
+///   "exercise_description"   : String,
+///   "exercise_sets"          : int,
+///   "exercise_reps"          : int,
+///   "exercise_duration_sec"  : int,
+///   "exercise_order"         : int,
+///   "exercise_xp"            : int,
+///   "exercise_calories_burn" : double,
+///   "is_completed"           : int,
+///   "sets_completed"         : int,
+///   "reps_completed"         : int,
+/// }
+class AiExerciseScreen extends StatefulWidget {
   final String sessionId;
-  final int? workoutId;
+  final int? aiWorkoutId;
   final List<Map<String, dynamic>> exercises;
   final int startIndex;
 
-  const ExerciseScreen({
+  const AiExerciseScreen({
     super.key,
     required this.sessionId,
-    this.workoutId,
+    this.aiWorkoutId,
     required this.exercises,
     this.startIndex = 0,
   });
 
   @override
-  State<ExerciseScreen> createState() => _ExerciseScreenState();
+  State<AiExerciseScreen> createState() => _AiExerciseScreenState();
 }
 
-class _ExerciseScreenState extends State<ExerciseScreen>
+class _AiExerciseScreenState extends State<AiExerciseScreen>
     with SingleTickerProviderStateMixin {
 
   // ─── State ────────────────────────────────────────────────────────────────
@@ -36,6 +54,12 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     super.initState();
     _exercises   = widget.exercises;
     currentIndex = widget.startIndex;
+    print("=============");
+    print(widget.aiWorkoutId);
+    print(widget.exercises);
+    print(widget.startIndex);
+    print(widget.sessionId);
+    print("=============");
 
     _fadeController = AnimationController(
       vsync: this,
@@ -61,23 +85,22 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     });
   }
 
-  // ─── Convenience getters ──────────────────────────────────────────────────
-  Map<String, dynamic> get currentItem     => _exercises[currentIndex];
-  Map<String, dynamic> get currentExercise =>
-      Map<String, dynamic>.from(currentItem['exercise'] ?? {});
+  // ─── Convenience getters ─────────────────────────────────────────────────
+  /// Flat map — read directly (no nested 'exercise' key).
+  Map<String, dynamic> get currentItem => _exercises[currentIndex];
   bool get alreadyCompleted => (currentItem['is_completed'] ?? 0) == 1;
   bool get isLastExercise   => currentIndex >= _exercises.length - 1;
 
   // ─── API call ─────────────────────────────────────────────────────────────
   Future<void> _updateProgress({required int isCompleted}) async {
-    await UserApiService.updateExerciseProgress(
+    await UserApiService.updateAiExerciseProgress(
       sessionId:           widget.sessionId,
-      workoutId:           widget.workoutId!,
-      exerciseId:          currentExercise['exercise_id'],
+      aiworkoutId:         widget.aiWorkoutId!,
+      exerciseId:          currentItem['exercise_id'],
       exerciseOrder:       currentItem['exercise_order'],
-      setsCompleted:       isCompleted == 1 ? currentExercise['exercise_sets']             : null,
-      repsCompleted:       isCompleted == 1 ? currentExercise['exercise_reps']             : null,
-      exerciseDurationSec: isCompleted == 1 ? currentExercise['exercise_duration_second']  : null,
+      setsCompleted:       isCompleted == 1 ? currentItem['exercise_sets']        : null,
+      repsCompleted:       isCompleted == 1 ? currentItem['exercise_reps']        : null,
+      exerciseDurationSec: isCompleted == 1 ? currentItem['exercise_duration_sec']: null,
       isCompleted:         isCompleted,
     );
   }
@@ -197,8 +220,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                       color: Color(0xff1c1c1e))),
               const SizedBox(height: 6),
               Text("Great job! Here's your summary",
-                  style:
-                  TextStyle(fontSize: 14, color: Colors.grey.shade500)),
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -237,8 +259,8 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                         borderRadius: BorderRadius.circular(16)),
                   ),
                   child: const Text('Back to Home',
-                      style: TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w600)),
+                      style:
+                      TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -256,8 +278,8 @@ class _ExerciseScreenState extends State<ExerciseScreen>
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      decoration: BoxDecoration(
-          color: color, borderRadius: BorderRadius.circular(16)),
+      decoration:
+      BoxDecoration(color: color, borderRadius: BorderRadius.circular(16)),
       child: Column(
         children: [
           Text(icon, style: const TextStyle(fontSize: 22)),
@@ -269,8 +291,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                   color: Color(0xff1c1c1e))),
           const SizedBox(height: 2),
           Text(label,
-              style:
-              TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
         ],
       ),
     );
@@ -279,7 +300,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
   // ─── Build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final exercise = currentExercise;
+    final exercise = currentItem; // flat map — read directly
     final total    = _exercises.length;
     final progress = (currentIndex + 1) / total;
 
@@ -302,8 +323,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
         children: [
           // ── Progress bar ──
           Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -313,8 +333,8 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                     value: progress,
                     minHeight: 5,
                     backgroundColor: Colors.grey.shade200,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.blue.shade600),
+                    valueColor:
+                    AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -363,12 +383,10 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                                 height: 260,
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade100,
-                                  borderRadius:
-                                  BorderRadius.circular(24),
+                                  borderRadius: BorderRadius.circular(24),
                                 ),
                                 child: Column(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(Icons.fitness_center_rounded,
                                         size: 52,
@@ -393,22 +411,19 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                                     horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: Colors.green.shade500,
-                                  borderRadius:
-                                  BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: const [
                                     Icon(Icons.check_circle,
-                                        size: 13,
-                                        color: Colors.white),
+                                        size: 13, color: Colors.white),
                                     SizedBox(width: 4),
                                     Text('Done',
                                         style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 12,
-                                            fontWeight:
-                                            FontWeight.w600)),
+                                            fontWeight: FontWeight.w600)),
                                   ],
                                 ),
                               ),
@@ -421,10 +436,8 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                color:
-                                Colors.black.withOpacity(0.45),
-                                borderRadius:
-                                BorderRadius.circular(20),
+                                color: Colors.black.withOpacity(0.45),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
                                 '${currentIndex + 1} / $total',
@@ -466,8 +479,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                       children: [
                         _metricTile(
                           icon: Icons.timer_outlined,
-                          value:
-                          '${exercise['exercise_duration_second']}s',
+                          value: '${exercise['exercise_duration_sec']}s',
                           label: 'Duration',
                           iconColor: Colors.blue.shade400,
                           bgColor: Colors.blue.shade50,
@@ -506,8 +518,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(18)),
+                              borderRadius: BorderRadius.circular(18)),
                         ),
                         child: isLoading
                             ? SizedBox(
@@ -515,8 +526,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                             height: 22,
                             child: CircularProgressIndicator())
                             : Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               alreadyCompleted
@@ -550,25 +560,21 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed:
-                            (currentIndex > 0 && !isLoading)
+                            onPressed: (currentIndex > 0 && !isLoading)
                                 ? _goPrevious
                                 : null,
-                            icon: const Icon(
-                                Icons.arrow_back_ios_new_rounded,
+                            icon: const Icon(Icons.arrow_back_ios_new_rounded,
                                 size: 15),
                             label: const Text('Previous'),
                             style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15),
-                              side: BorderSide(
-                                  color: Colors.grey.shade300),
+                              padding:
+                              const EdgeInsets.symmetric(vertical: 15),
+                              side:
+                              BorderSide(color: Colors.grey.shade300),
                               shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(14)),
+                                  borderRadius: BorderRadius.circular(14)),
                               textStyle: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500),
+                                  fontSize: 15, fontWeight: FontWeight.w500),
                             ),
                           ),
                         ),
@@ -582,22 +588,18 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                                   : Icons.skip_next_rounded,
                               size: 18,
                             ),
-                            label: Text(isLastExercise
-                                ? 'Skip & Finish'
-                                : 'Skip'),
+                            label: Text(
+                                isLastExercise ? 'Skip & Finish' : 'Skip'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                              const Color(0xff1c1c1e),
+                              backgroundColor: const Color(0xff1c1c1e),
                               foregroundColor: Colors.white,
                               elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15),
+                              padding:
+                              const EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(14)),
+                                  borderRadius: BorderRadius.circular(14)),
                               textStyle: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500),
+                                  fontSize: 15, fontWeight: FontWeight.w500),
                             ),
                           ),
                         ),
@@ -625,8 +627,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
   }) {
     return Expanded(
       child: Container(
-        padding:
-        const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -661,8 +662,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
             const SizedBox(height: 2),
             Text(
               label,
-              style: TextStyle(
-                  fontSize: 11, color: Colors.grey.shade500),
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
             ),
           ],
         ),

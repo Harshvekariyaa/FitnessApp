@@ -56,7 +56,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: buildLoader())
           : exercise == null
           ? const Center(child: Text("Exercise not found"))
           : SingleChildScrollView(

@@ -40,7 +40,7 @@ class _CategorywiseInjuryScreenState extends State<CategorywiseInjuryScreen> {
       backgroundColor: AppColors.scaffoldBackground,
       appBar: commonAppBar("Injuries"),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: buildLoader())
           : injuriesList.isEmpty
           ? _emptyState()
           : ListView.builder(

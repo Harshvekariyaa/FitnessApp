@@ -47,7 +47,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
       appBar: commonAppBar("Food Detail"),
       backgroundColor: AppColors.scaffoldBackground,
       body: isLoading
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: buildLoader())
         : meal == null
     ? const Center(child: Text("Meal not found"))
         : SingleChildScrollView(

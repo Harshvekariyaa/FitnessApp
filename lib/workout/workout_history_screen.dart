@@ -45,6 +45,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
 
       if (response["success"] == true) {
         List data = response["data"];
+        print(data);
+
         Map<DateTime, List<dynamic>> events = {};
 
         for (var item in data) {
@@ -215,9 +217,9 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
             _sectionHeader(),
             const SizedBox(height: 10),
             isLoading
-                ? const Padding(
+                ? Padding(
               padding: EdgeInsets.only(top: 60),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: buildLoader()),
             )
                 : _workoutList(),
             const SizedBox(height: 30),
@@ -748,8 +750,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                 _searchQuery.isNotEmpty
                     ? "No workouts match \"$_searchQuery\""
                     : "No workouts found",
-                style: TextStyle(
-                    fontSize: 15, color: Colors.grey.shade400),
+                style: TextStyle(fontSize: 15, color: Colors.grey.shade400),
               ),
             ],
           ),
@@ -765,7 +766,27 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final workout = workouts[index];
-        final workoutData = workout["workout"];
+
+        // ✅ Use correct key: workout_details
+        final workoutData = workout["workout_details"];
+        final isAI = workout["ai_workout_id"] != null;
+        final imageUrl = workoutData?["workout_image_url"];
+        final workoutName = workoutData?["workout_name"] ?? "Unknown Workout";
+        final difficulty = workoutData?["workout_difficulty"] ?? "";
+        final durationMin = workoutData?["workout_duration_minute"];
+
+        // ✅ Format calories (handle double)
+        final rawCalories = workout["total_calories"] ?? 0;
+        final calories = rawCalories is double
+            ? rawCalories.toStringAsFixed(1)
+            : rawCalories.toString();
+
+        // ✅ Format time (trim seconds if needed — "11:14:00" → "11:14")
+        final rawTime = workout["workout_time"]?.toString() ?? "";
+        final timeParts = rawTime.split(":");
+        final formattedTime = timeParts.length >= 2
+            ? "${timeParts[0]}:${timeParts[1]}"
+            : rawTime;
 
         return Container(
           padding: const EdgeInsets.all(14),
@@ -782,48 +803,69 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
           ),
           child: Row(
             children: [
+              // ✅ Image with fallback placeholder
               ClipRRect(
                 borderRadius: BorderRadius.circular(14),
-                child: Image.network(
-                  workoutData["workout_image_url"],
+                child: (imageUrl != null && imageUrl.toString().isNotEmpty)
+                    ? Image.network(
+                  imageUrl,
                   width: 72,
                   height: 72,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    width: 72,
-                    height: 72,
-                    color: Colors.grey.shade100,
-                    child: Icon(Icons.image_not_supported,
-                        color: Colors.grey.shade400),
-                  ),
-                ),
+                  errorBuilder: (_, __, ___) =>
+                      _workoutImagePlaceholder(workoutName),
+                )
+                    : _workoutImagePlaceholder(workoutName),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      workoutData["workout_name"],
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            workoutName,
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w700),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        // ✅ AI badge
+                        if (isAI)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.purple.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              "AI",
+                              style: TextStyle(
+                                  color: Colors.purple.shade600,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        _difficultyChip(
-                            workoutData["workout_difficulty"]),
-                        const SizedBox(width: 8),
+                        if (difficulty.isNotEmpty)
+                          _difficultyChip(difficulty),
+                        if (difficulty.isNotEmpty)
+                          const SizedBox(width: 8),
                         Icon(Icons.access_time,
                             size: 13, color: Colors.grey.shade400),
                         const SizedBox(width: 3),
                         Text(
-                          workout["workout_time"],
+                          formattedTime,
                           style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 12),
+                              color: Colors.grey.shade500, fontSize: 12),
                         ),
                       ],
                     ),
@@ -832,13 +874,19 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                       children: [
                         _statChip(
                             Icons.local_fire_department,
-                            "${workout["total_calories"]} kcal",
+                            "$calories kcal",
                             Colors.orange),
                         const SizedBox(width: 8),
+                        if (durationMin != null)
+                          _statChip(
+                              Icons.timer_outlined,
+                              "$durationMin min",
+                              Colors.blue),
+                        const SizedBox(width: 8),
                         _statChip(
-                            Icons.timer_outlined,
-                            "${workoutData["workout_duration_minute"]} min",
-                            Colors.blue),
+                            Icons.bolt,
+                            "+${workout["total_xp"]} XP",
+                            Colors.amber),
                       ],
                     ),
                   ],
@@ -848,6 +896,49 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
           ),
         );
       },
+    );
+  }
+
+// ✅ NEW: Styled placeholder when image is missing
+  Widget _workoutImagePlaceholder(String workoutName) {
+    // Pick a color based on first letter
+    final colors = [
+      Colors.blue, Colors.teal, Colors.orange,
+      Colors.purple, Colors.green, Colors.red,
+    ];
+    final colorIndex = workoutName.isNotEmpty
+        ? workoutName.codeUnitAt(0) % colors.length
+        : 0;
+    final color = colors[colorIndex];
+
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.fitness_center, color: color, size: 26),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              workoutName.split(" ").first,
+              style: TextStyle(
+                color: color,
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

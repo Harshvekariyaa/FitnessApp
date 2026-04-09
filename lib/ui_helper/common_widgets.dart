@@ -271,3 +271,47 @@ Widget numberCard({
 //     fontSize: 16.0,
 //   );
 // }
+
+Widget buildLoader() {
+  return Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: 64,
+              height: 64,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.primary.withOpacity(0.2)),
+              ),
+            ),
+            SizedBox(
+              width: 48,
+              height: 48,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                strokeCap: StrokeCap.round,
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
+            ),
+            Icon(Icons.auto_awesome_rounded,
+                color: AppColors.primary, size: 20),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Text(
+          'Loading...',
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  );
+}

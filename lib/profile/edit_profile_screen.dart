@@ -111,7 +111,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       backgroundColor: AppColors.scaffoldBackground,
       appBar: commonAppBar("Edit Your Profile"),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: buildLoader())
           : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),

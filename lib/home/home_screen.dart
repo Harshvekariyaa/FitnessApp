@@ -1,12 +1,13 @@
 import 'dart:math';
 import 'package:fitnessai/Themes_and_color/app_colors.dart';
-import 'package:fitnessai/profile/personalized_plan/diet_plans.dart';
+import 'package:fitnessai/profile/personalized_plan/diet/ai_diet_plans.dart';
 import 'package:fitnessai/profile/personalized_plan/workout_plans.dart';
 import 'package:fitnessai/ui_helper/common_widgets.dart';
 import 'package:fitnessai/workout/detailed_workout_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_service.dart';
+import '../profile/personalized_plan/workout/ai_workout_plan_list.dart';
 
 // ─── Shimmer helper ───────────────────────────────────────────────────────────
 class _Shimmer extends StatefulWidget {
@@ -1045,160 +1046,236 @@ class _HomeScreenState extends State<HomeScreen>
               Text("My Plans",
                   style: textStyle(AppColors.black, 16, AppColors.w600)),
               const SizedBox(height: 10),
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Your Workout card
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutPlans(),));
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 16),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.primary,
-                                AppColors.primary.withOpacity(0.75),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Your Workout card
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.44,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutPlans()));
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primary.withOpacity(0.75),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withOpacity(0.30),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 5),
+                                ),
                               ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withOpacity(0.30),
-                                blurRadius: 12,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(9),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(9),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.fitness_center_rounded,
+                                    color: Colors.white,
+                                    size: 22,
+                                  ),
                                 ),
-                                child: const Icon(
-                                  Icons.fitness_center_rounded,
-                                  color: Colors.white,
-                                  size: 22,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "Your Workout",
-                                      style: textStyle(
-                                          AppColors.white, 14, AppColors.bold),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      "View your plan",
-                                      style: textStyle(
-                                        AppColors.white.withOpacity(0.8),
-                                        11,
-                                        AppColors.normal,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "Your Workout",
+                                        style: textStyle(AppColors.white, 14, AppColors.bold),
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        "View your plan",
+                                        style: textStyle(
+                                          AppColors.white.withOpacity(0.8),
+                                          11,
+                                          AppColors.normal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: AppColors.white.withOpacity(0.8),
-                                size: 14,
-                              ),
-                            ],
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: AppColors.white.withOpacity(0.8),
+                                  size: 14,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    // Your Diet card
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => DietPlans(),));
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 16),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF2ECC71),
-                                Color(0xFF27AE60),
+                      const SizedBox(width: 10),
+                      // Your Diet card
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.44,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => AiDietPlans()));
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF2ECC71),
+                                  Color(0xFF27AE60),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0xFF2ECC71).withOpacity(0.30),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 5),
+                                ),
                               ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0xFF2ECC71).withOpacity(0.30),
-                                blurRadius: 12,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(9),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(9),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.restaurant_menu_rounded,
+                                    color: Colors.white,
+                                    size: 22,
+                                  ),
                                 ),
-                                child: const Icon(
-                                  Icons.restaurant_menu_rounded,
-                                  color: Colors.white,
-                                  size: 22,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "Your Diet",
-                                      style: textStyle(
-                                          AppColors.white, 14, AppColors.bold),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      "View your plan",
-                                      style: textStyle(
-                                        AppColors.white.withOpacity(0.8),
-                                        11,
-                                        AppColors.normal,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "Your Diet",
+                                        style: textStyle(AppColors.white, 14, AppColors.bold),
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        "View your plan",
+                                        style: textStyle(
+                                          AppColors.white.withOpacity(0.8),
+                                          11,
+                                          AppColors.normal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: AppColors.white.withOpacity(0.8),
-                                size: 14,
-                              ),
-                            ],
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: AppColors.white.withOpacity(0.8),
+                                  size: 14,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+
+                      // View AI Workouts card
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.44,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => AiWorkoutPlan()));
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF6C63FF),
+                                  Color(0xFF4B44CC),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0xFF6C63FF).withOpacity(0.30),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(9),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.auto_awesome_rounded,
+                                    color: Colors.white,
+                                    size: 22,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "View Ai Workouts",
+                                        style: textStyle(AppColors.white, 14, AppColors.bold),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        "AI generated plans",
+                                        style: textStyle(
+                                          AppColors.white.withOpacity(0.8),
+                                          11,
+                                          AppColors.normal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: AppColors.white.withOpacity(0.8),
+                                  size: 14,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 14),

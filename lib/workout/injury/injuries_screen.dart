@@ -142,7 +142,7 @@ class _InjuriesScreenState extends State<InjuriesScreen> {
               const SizedBox(height: 20),
               /// Injury List
               isLoadingInjuries
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Center(child: buildLoader())
                   : _displayedInjuries.isEmpty
                   ? _emptyState()
                   : Column(
@@ -375,7 +375,7 @@ class _InjuriesScreenState extends State<InjuriesScreen> {
         ),
         const SizedBox(height: 16),
         isLoadingCategories
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: buildLoader())
             : GridView.builder(
           itemCount: focusAreas.length,
           shrinkWrap: true,

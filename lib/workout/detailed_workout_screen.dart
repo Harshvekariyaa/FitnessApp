@@ -39,7 +39,7 @@ class _DetailedWorkoutScreenState extends State<DetailedWorkoutScreen> {
       return Scaffold(
         backgroundColor: AppColors.scaffoldBackground,
         appBar: commonAppBar("Workout Details"),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(child: buildLoader()),
       );
     }
 
@@ -493,7 +493,7 @@ class _DetailedWorkoutScreenState extends State<DetailedWorkoutScreen> {
       child: SizedBox(
         width: double.infinity,
         child: isStartingWorkout
-            ? _loadingButton()
+            ? buildLoader()
             : elevetedbtn("Start Workout", () async {
           setState(() => isStartingWorkout = true);
           try {
@@ -517,6 +517,13 @@ class _DetailedWorkoutScreenState extends State<DetailedWorkoutScreen> {
                 .toList();
 
             if (!mounted) return;
+
+            print("-----");
+            print(sessionId);
+            print(widget.workout_id);
+            print(exercises);
+            print("-----");
+
             Navigator.push(
               context,
               MaterialPageRoute(
